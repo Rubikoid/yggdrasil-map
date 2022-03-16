@@ -4,7 +4,7 @@ import cgi
 
 import urllib, json
 #url = "http://y.yakamo.org:3000/current"
-url = "current"
+url = "/nodes.json"
 
 # nodes indexed by coords
 class NodeInfo:
@@ -29,7 +29,10 @@ class LinkInfo:
     self.b = b # NodeInfo
 
 def generate_graph(time_limit=60*60*3):
-    response = urllib.urlopen(url)
+    if 'http' in url:
+        response = urllib.urlopen(url)
+    else:
+        response = open(url)
     data = json.loads(response.read())["yggnodes"]
 
     toAdd = []

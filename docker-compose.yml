@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    # ports:
+    #   - "3000:3000"
+    environment:
+      - "HOST=::"
+    volumes:
+      - "./nodes.json:/nodes.json:ro"
+    network_mode: "host"
+    restart: always
