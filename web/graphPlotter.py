@@ -9,12 +9,15 @@ def position_nodes(nodes, edges):
     G = pgv.AGraph(strict=True, directed=False, size='10!')
 
     for n in nodes.values():
+        # if n.label == "kks.delta":
+        #     G.add_node(n.ip, label=n.label, coords=n.coords, pos="20,20!")
+        # else:
         G.add_node(n.ip, label=n.label, coords=n.coords)
 
     for e in edges:
         G.add_edge(e.a.ip, e.b.ip, len=1.0)
 
-    G.layout(prog='neato', args='-Gepsilon=0.0001 -Gmaxiter=100000')
+    G.layout(prog='neato', args='-Gepsilon=0.0001 -Gmaxiter=10000 -s')
 
     return G
 
@@ -57,7 +60,7 @@ def get_graph_json(G):
     }
 
     centralities = compute_betweenness(G)
-    db = load_db()
+    db = {} # load_db()
 
     for n in G.iternodes():
         neighbor_ratio = len(G.neighbors(n)) / float(max_neighbors)
@@ -73,8 +76,8 @@ def get_graph_json(G):
             'label': name if name else n.attr['label'],
             'name': name,
             'coords': n.attr['coords'],
-            'x': float(pos[0]),
-            'y': float(pos[1]),
+            'x': float(pos[0]) + 180,
+            'y': float(pos[1]) + 180,
             'color': _gradient_color(neighbor_ratio, [(100, 100, 100), (0, 0, 0)]),
             'size': size,
             'centrality': '%.4f' % centrality

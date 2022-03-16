@@ -9,14 +9,15 @@ parser.add_argument("--port", type=int, help="port to listen on (default '3000')
 app = Flask(__name__)
 app.config.from_pyfile('web_config.cfg')
 
+
 def get_ip():
-        try:
-                ip = request.headers['x-real-ip']
-        except KeyError:
-                ip = None
-        if ip == '10.18.3.20':
-                ip = request.headers['x-atomshare-real-ip']
-        return ip
+    try:
+        ip = request.headers['x-real-ip']
+    except KeyError:
+        ip = None
+    if ip == '10.18.3.20':
+        ip = request.headers['x-atomshare-real-ip']
+    return ip
 
 @app.context_processor
 def add_ip():

@@ -267,7 +267,13 @@ $(document).ready(function() {
 
         drawNetwork();
 
-        $(window).resize(function() {
+        for (var i = 0; i < 4; i++) {
+            scroll_base({ x: 55, y: 55 }, 1);
+        }
+
+        drawNetwork();
+
+        $(window).resize(function () {
             updateCanvasSize();
             drawNetwork();
         });
@@ -388,11 +394,8 @@ $(document).ready(function() {
     });
 
 
-    function handleScroll(e) {
-        var mouse = mousePos(e);
-        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-
-        var ratio = (delta < 0) ? (3 / 4) :  1 + (1 / 3);
+    function scroll_base(mouse, delta) {
+        var ratio = (delta < 0) ? (3 / 4) : 1 + (1 / 3);
         var mx = mouse.x - mapOffset.x;
         var my = mouse.y - mapOffset.y;
 
@@ -407,6 +410,13 @@ $(document).ready(function() {
             // node.radius *= ratio;
             node.radius = (node.size) * zoom;
         }
+    }
+
+    function handleScroll(e) {
+        var mouse = mousePos(e);
+        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+
+        scroll_base(mouse, delta);
 
         drawNetwork();
     }
