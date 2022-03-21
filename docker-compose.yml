@@ -8,6 +8,7 @@ services:
     environment:
       - "HOST=::"
     volumes:
-      - "./nodes.json:/nodes.json:ro"
+      # - "./nodes.json:/nodes.json:ro"
+      - "/var/run/yggdrasil.sock:/var/run/yggdrasil.sock"
     network_mode: "host"
     restart: always
