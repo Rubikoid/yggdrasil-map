@@ -5,8 +5,9 @@ import networkx as nx
 from networkx.algorithms import centrality
 import urllib
 
+
 def position_nodes(nodes, edges):
-    G = pgv.AGraph(strict=True, directed=False, size='10!')
+    G = pgv.AGraph(strict=True, directed=False, size="10!")
 
     for n in nodes.values():
         # if n.label == "kks.delta":
@@ -17,9 +18,10 @@ def position_nodes(nodes, edges):
     for e in edges:
         G.add_edge(e.a.ip, e.b.ip, len=1.0)
 
-    G.layout(prog='neato', args='-Gepsilon=0.0001 -Gmaxiter=10000 -s')
+    G.layout(prog="neato", args="-Gepsilon=0.0001 -Gmaxiter=10000 -s")
 
     return G
+
 
 def compute_betweenness(G):
     ng = nx.Graph()
@@ -35,15 +37,10 @@ def compute_betweenness(G):
 
     return c
 
-def canonalize_ip(ip):
-    return ':'.join( i.rjust(4, '0') for i in ip.split(':') )
 
-def load_db():
-    #with open('nodedb/nodes') as f:
-    #    return dict([ (canonalize_ip(v[0]), v[1]) for v in [ l.split(None)[:2] for l in f.readlines() ] if len(v) > 1 ])
-    url = "https://raw.githubusercontent.com/yakamok/yggdrasil-nodelist/master/nodelist"
-    f = urllib.urlopen(url)
-    return dict([ (canonalize_ip(v[0]), v[1]) for v in [ l.split(None)[:2] for l in f.readlines() ] if len(v) > 1 ])
+def canonalize_ip(ip):
+    return ":".join(i.rjust(4, "0") for i in ip.split(":"))
+
 
 def get_graph_json(G):
     max_neighbors = 1
@@ -51,43 +48,43 @@ def get_graph_json(G):
         neighbors = len(G.neighbors(n))
         if neighbors > max_neighbors:
             max_neighbors = neighbors
-    print 'Max neighbors: %d' % max_neighbors
+    print(f"Max neighbors: {max_neighbors}")
 
     out_data = {
-        'created': int(time.time()),
-        'nodes': [],
-        'edges': []
+        "created": int(time.time()),
+        "nodes": [],
+        "edges": [],
     }
 
     centralities = compute_betweenness(G)
-    db = {} # load_db()
+    db = {}
 
     for n in G.iternodes():
         neighbor_ratio = len(G.neighbors(n)) / float(max_neighbors)
-        pos = n.attr['pos'].split(',', 1)
+        pos = n.attr["pos"].split(",", 1)
         centrality = centralities.get(n.name, 0)
-        size = 5*(1 + 1*centrality)
+        size = 5 * (1 + 1 * centrality)
         name = db.get(canonalize_ip(n.name))
         # If label isn't the default value, set name to that instead
-        if n.attr['label'] != n.name.split(':')[-1]: name = n.attr['label']
+        if n.attr["label"] != n.name.split(":")[-1]:
+            name = n.attr["label"]
 
-        out_data['nodes'].append({
-            'id': n.name,
-            'label': name if name else n.attr['label'],
-            'name': name,
-            'coords': n.attr['coords'],
-            'x': float(pos[0]) + 180,
-            'y': float(pos[1]) + 180,
-            'color': _gradient_color(neighbor_ratio, [(100, 100, 100), (0, 0, 0)]),
-            'size': size,
-            'centrality': '%.4f' % centrality
-        })
+        out_data["nodes"].append(
+            {
+                "id": n.name,
+                "label": name if name else n.attr["label"],
+                "name": name,
+                "coords": n.attr["coords"],
+                "x": float(pos[0]) + 10,
+                "y": float(pos[1]) + 15,
+                "color": _gradient_color(neighbor_ratio, [(100, 100, 100), (0, 0, 0)]),
+                "size": size,
+                "centrality": "%.4f" % centrality,
+            }
+        )
 
     for e in G.iteredges():
-        out_data['edges'].append({
-            'sourceID': e[0],
-            'targetID': e[1]
-        })
+        out_data["edges"].append({"sourceID": e[0], "targetID": e[1]})
 
     return json.dumps(out_data)
 
@@ -101,8 +98,8 @@ def _gradient_color(ratio, colors):
 
     ratio = (ratio - gap_num * jump) * (len(colors) - 1)
 
-    r = a[0] + (b[0] - a[0]) * ratio
-    g = a[1] + (b[1] - a[1]) * ratio
-    b = a[2] + (b[2] - a[2]) * ratio
+    r = int(a[0] + (b[0] - a[0]) * ratio)
+    g = int(a[1] + (b[1] - a[1]) * ratio)
+    b = int(a[2] + (b[2] - a[2]) * ratio)
 
-    return '#%02x%02x%02x' % (r, g, b)
+    return f"#{r:02x}{g:02x}{b:02x}"

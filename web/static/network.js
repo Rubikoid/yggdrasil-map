@@ -4,7 +4,7 @@ var nodes = [];
 var edges = [];
 var canvas = null;
 var ctx = null;
-var mapOffset = {x: 0, y: 0};
+var mapOffset = { x: 0, y: 0 };
 var zoom = 1.0;
 
 function changeHash(hash) {
@@ -12,14 +12,14 @@ function changeHash(hash) {
 }
 
 function updateCanvasSize() {
-    $(canvas).attr({height: $(canvas).height(), width: $(canvas).width()});
+    $(canvas).attr({ height: $(canvas).height(), width: $(canvas).width() });
     ctx.translate(mapOffset.x, mapOffset.y);
 }
 
 function drawCircle(ctx, x, y, radius, color) {
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI*2, true);
+    ctx.arc(x, y, radius, 0, Math.PI * 2, true);
     ctx.fill();
 }
 
@@ -53,7 +53,7 @@ function drawNetwork() {
     // Draw edges
     for (var i = 0; i < edges.length; ++i) {
         var edge = edges[i];
-        var highlight = edge.sourceNode.hover || edge.targetNode.hover;
+        var highlight = edge.sourceNode.hover || edge.targetNode.hover;
         var color = highlight ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.15)';
 
         drawLine(ctx,
@@ -73,7 +73,7 @@ function drawNetwork() {
     for (var i = 0; i < nodes.length; ++i) {
         var node = nodes[i];
 
-        if (node.radius > 4 || node.selected || node.hover) {
+        if (node.radius > 4 || node.selected || node.hover) {
             var fontSize = 4 + node.radius * 0.4;
 
             drawText(ctx, node.x, node.y - node.radius - 1,
@@ -161,7 +161,7 @@ function showNodeInfo(node) {
             dns_peers.push(n);
     }
 
-    var label_compare = function(a, b) {
+    var label_compare = function (a, b) {
         return a.label.localeCompare(b.label);
     }
 
@@ -191,18 +191,18 @@ function showNodeInfo(node) {
 
 function mousePos(e) {
     var rect = canvas.getBoundingClientRect();
-    return {x: e.clientX - rect.left, y: e.clientY - rect.top};
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }
 
 
 
-$(document).ready(function() {
+$(document).ready(function () {
     canvas = document.getElementById('map');
     ctx = canvas.getContext('2d');
     updateCanvasSize();
 
 
-    jQuery.getJSON('/static/graph.json', function(data) {
+    jQuery.getJSON('/static/graph.json', function (data) {
         nodes = data.nodes;
         edges = data.edges;
 
@@ -237,7 +237,7 @@ $(document).ready(function() {
             }
 
             if (!edge.sourceNode || !edge.targetNode)
-               continue;
+                continue;
 
             edge.sourceNode.edges.push(edge);
             edge.targetNode.edges.push(edge);
@@ -299,18 +299,18 @@ $(document).ready(function() {
             lookup: searchArray,
             autoSelectFirst: true,
             lookupLimit: 7,
-            onSelect: function(suggestion) {
+            onSelect: function (suggestion) {
                 selectNode(suggestion.data, true);
             }
         });
 
-        $('#search-box').keypress(function(e) {
+        $('#search-box').keypress(function (e) {
             if (e.which == 13) {
                 selectNode(searchNode($('#search-box').val()), true);
             }
         });
 
-        $(document).on('click', '#node-info a', function(e) {
+        $(document).on('click', '#node-info a', function (e) {
             var id = e.target.hash.substring(1);
             selectNode(searchNode(id), true);
         });
@@ -326,7 +326,7 @@ $(document).ready(function() {
     var mouseHoverNode = null;
 
 
-    $(canvas).mousemove(function(e) {
+    $(canvas).mousemove(function (e) {
         var mouse = mousePos(e);
 
         // Dragging
@@ -337,7 +337,7 @@ $(document).ready(function() {
             mapOffset.x += dx;
             mapOffset.y += dy;
             ctx.translate(dx, dy);
-            mouseLastPos = {x: mouse.x, y: mouse.y};
+            mouseLastPos = { x: mouse.x, y: mouse.y };
             drawNetwork();
         }
         // Hovering
@@ -363,14 +363,14 @@ $(document).ready(function() {
     });
 
 
-    $(canvas).mousedown(function(e) {
+    $(canvas).mousedown(function (e) {
         var mouse = mousePos(e);
-        mouseLastPos = mouseDownPos = {x: mouse.x, y: mouse.y};
+        mouseLastPos = mouseDownPos = { x: mouse.x, y: mouse.y };
         mouseDownNode = getNodeAt(mouse.x, mouse.y);
         return false;
     });
 
-    $(canvas).mouseup(function(e) {
+    $(canvas).mouseup(function (e) {
         var mouse = mousePos(e);
         var mouseMoved =
             Math.abs(mouse.x - mouseDownPos.x) +

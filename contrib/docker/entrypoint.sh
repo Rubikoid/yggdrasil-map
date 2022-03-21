@@ -2,7 +2,6 @@
 
 set -e
 
-cron
-cd /src/yggdrasil-map/web/ && python updateGraph.py
-python /src/yggdrasil-map/web/web.py --host $HOST --port $PORT
+cd /src/yggdrasil-map/web/ && python3 updateGraph.py
+python3 /src/yggdrasil-map/web/web.py --host $HOST --port $PORT
 exit $?
