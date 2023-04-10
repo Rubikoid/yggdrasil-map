@@ -26,10 +26,13 @@ func dial() (net.Conn, error) {
 }
 
 func getRequest(key, request string) map[string]interface{} {
+	arguments := map[string]interface{}{
+		"key":       key,
+	}
 	return map[string]interface{}{
 		"keepalive": true,
 		"request":   request,
-		"key":       key,
+		"arguments": arguments,
 	}
 }
 
@@ -187,11 +190,8 @@ func doPrinter() (chan rumorResult, chan struct{}) {
 
 func main() {
 	self := doRequest(map[string]interface{}{"keepalive": true, "request": "getSelf"})
-	res := self["response"].(map[string]interface{})["self"].(map[string]interface{})
-	var key string
-	for _, v := range res {
-		key = v.(map[string]interface{})["key"].(string)
-	}
+	res := self["response"].(map[string]interface{})
+	var key string = res["key"].(string)
 	results, done := doPrinter()
 	doRumor(key, results)
 	waitgroup.Wait()
