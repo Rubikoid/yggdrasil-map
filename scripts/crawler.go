@@ -133,6 +133,9 @@ func doRequest(request map[string]interface{}) map[string]interface{} {
 		}
 		// TODO parse res, check if there's an error
 		if res, ok := res["response"]; ok {
+			if res == nil {
+				continue
+			}
 			if _, isIn := res.(map[string]interface{})["error"]; isIn {
 				continue
 			}
@@ -178,6 +181,9 @@ func doRumor(key string, out chan rumorResult) {
 		}
 		results := make(map[string]interface{})
 		if res, ok := getNodeInfo(key)["response"]; ok {
+			if res == nil {
+				return
+			}
 			for addr, v := range res.(map[string]interface{}) {
 				vm, ok := v.(map[string]interface{})
 				if !ok {
