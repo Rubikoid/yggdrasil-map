@@ -189,7 +189,7 @@ func doRumor(key string, out chan rumorResult) {
 				if !ok {
 					return
 				}
-				results["address"] = addr
+				results["address"] = addrToAddr(addr)
 				results["nodeinfo"] = vm
 			}
 		}
