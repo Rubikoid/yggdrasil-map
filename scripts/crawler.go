@@ -1,12 +1,84 @@
 package main
 
 import (
+	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
 	"time"
 )
+
+type Address [16]byte
+
+// GetPrefix returns the address prefix used by yggdrasil.
+// The current implementation requires this to be a multiple of 8 bits + 7 bits.
+// The 8th bit of the last byte is used to signal nodes (0) or /64 prefixes (1).
+// Nodes that configure this differently will be unable to communicate with each other using IP packets, though routing and the DHT machinery *should* still work.
+func GetPrefix() [1]byte {
+	return [...]byte{0x02}
+}
+
+// AddrForKey takes an ed25519.PublicKey as an argument and returns an *Address.
+// This function returns nil if the key length is not ed25519.PublicKeySize.
+// This address begins with the contents of GetPrefix(), with the last bit set to 0 to indicate an address.
+// The following 8 bits are set to the number of leading 1 bits in the bitwise inverse of the public key.
+// The bitwise inverse of the key, excluding the leading 1 bits and the first leading 0 bit, is truncated to the appropriate length and makes up the remainder of the address.
+func AddrForKey(publicKey ed25519.PublicKey) *Address {
+	// 128 bit address
+	// Begins with prefix
+	// Next bit is a 0
+	// Next 7 bits, interpreted as a uint, are # of leading 1s in the NodeID
+	// Leading 1s and first leading 0 of the NodeID are truncated off
+	// The rest is appended to the IPv6 address (truncated to 128 bits total)
+	if len(publicKey) != ed25519.PublicKeySize {
+		return nil
+	}
+	var buf [ed25519.PublicKeySize]byte
+	copy(buf[:], publicKey)
+	for idx := range buf {
+		buf[idx] = ^buf[idx]
+	}
+	var addr Address
+	var temp = make([]byte, 0, 32)
+	done := false
+	ones := byte(0)
+	bits := byte(0)
+	nBits := 0
+	for idx := 0; idx < 8*len(buf); idx++ {
+		bit := (buf[idx/8] & (0x80 >> byte(idx%8))) >> byte(7-(idx%8))
+		if !done && bit != 0 {
+			ones++
+			continue
+		}
+		if !done && bit == 0 {
+			done = true
+			continue // FIXME? this assumes that ones <= 127, probably only worth changing by using a variable length uint64, but that would require changes to the addressing scheme, and I'm not sure ones > 127 is realistic
+		}
+		bits = (bits << 1) | bit
+		nBits++
+		if nBits == 8 {
+			nBits = 0
+			temp = append(temp, bits)
+		}
+	}
+	prefix := GetPrefix()
+	copy(addr[:], prefix[:])
+	addr[len(prefix)] = ones
+	copy(addr[len(prefix)+1:], temp)
+	return &addr
+}
+
+func addrToAddr(inputAddr string) string {
+	decoded, err := hex.DecodeString(inputAddr)
+	if err != nil {
+		panic(err)
+	}
+	publicKey := ed25519.PublicKey(decoded)
+	addr := net.IP(AddrForKey(publicKey)[:])
+	return addr.String()
+}
 
 var waitgroup sync.WaitGroup
 var visited sync.Map
